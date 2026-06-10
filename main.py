@@ -1,43 +1,14 @@
 # AI 활용 자유 주제 파이썬 미니 프로젝트
 # 이름 또는 학번: 
-# 프로젝트 주제: 
-
-# ============================================================
-# 사용 안내
-# ------------------------------------------------------------
-# 이 파일은 예시 골격입니다.
-# 그대로 제출하지 말고, 반드시 자신의 주제에 맞게 수정하세요.
-#
-# 필수 조건
-# 1. 2차원 리스트 사용
-# 2. 함수 2개 이상, 가능하면 3개 이상 분리
-# 3. 조건문 사용
-# 4. 반복문 사용
-# 5. 실행 결과 출력
-# ============================================================
-
+# 프로젝트 주제: DNA 염기서열 분석 및 돌연변이 탐지기
 
 # ------------------------------------------------------------
 # 1. 데이터 준비: 2차원 리스트
 # ------------------------------------------------------------
-# 아래 예시는 "활동 추천 프로그램"입니다.
-# 자신의 주제에 맞게 data를 만드세요.
-#
-# 현재 열의 의미:
-# 0번 열: 활동 이름
-# 1번 열: 필요한 시간(분)
-# 2번 열: 추천 기분
-# 3번 열: 활동 유형
-# ------------------------------------------------------------
-
-activities = [
-    ["산책하기", 30, "피곤", "운동"],
-    ["짧은 낮잠", 20, "피곤", "휴식"],
-    ["좋아하는 음악 듣기", 10, "우울", "휴식"],
-    ["문제집 3쪽 풀기", 40, "차분", "공부"],
-    ["방 정리하기", 25, "답답", "생활"],
-    ["친구에게 연락하기", 15, "우울", "소통"],
-]
+# 발견된 돌연변이들을 모아서 저장할 비어있는 2차원 리스트입니다.
+# 프로그램이 실행되면서 발견되는 돌연변이 정보가 다음과 같이 저장될 예정입니다.
+# 예: [[3, 'C', 'G'], [7, 'A', 'T']] -> [위치(인덱스), 정상염기, 환자염기]
+mutations = []
 
 
 # ------------------------------------------------------------
@@ -47,52 +18,85 @@ activities = [
 def show_intro():
     """프로그램 제목과 안내를 출력한다."""
     print("=" * 40)
-    print("AI 활용 자유 주제 파이썬 미니 프로젝트")
-    print("예시: 기분과 시간에 따른 활동 추천기")
+    print("의생명 정보 분석: DNA 돌연변이 탐지기")
+    print("정상 DNA와 환자 DNA를 비교하여 변이를 찾아냅니다.")
     print("=" * 40)
 
 
-def get_user_input():
-    """사용자에게 기분과 남은 시간을 입력받는다."""
-    mood = input("현재 기분을 입력하세요. 예: 피곤, 우울, 차분, 답답: ")
-    minutes = int(input("사용 가능한 시간을 분 단위로 입력하세요: "))
-    return mood, minutes
+def get_dna_sequences():
+    """사용자에게 정상 DNA와 환자 DNA를 입력받는다."""
+    # 개인정보 보호를 위해 가상의 DNA 염기서열(A, T, G, C)을 입력하도록 안내합니다.
+    print("[주의] 테스트 시 실제 개인정보가 아닌 가상 서열을 입력하세요.")
+    
+    normal = input("정상 DNA 서열을 입력하세요 (예: ATGCATGC): ").upper() # 대문자로 변환
+    patient = input("환자 DNA 서열을 입력하세요 (예: ATGGATGC): ").upper()
+    
+    return normal, patient
 
 
-def find_recommendations(data, mood, minutes):
-    """2차원 리스트를 반복하며 조건에 맞는 활동을 찾는다."""
-    results = []
+def analyze_dna(normal, patient):
+    """두 서열을 반복문으로 비교하며 돌연변이를 찾고 2차원 리스트를 만듭니다."""
+    results = []  # 돌연변이 정보를 담을 임시 리스트
+    
+    # 예외 상황 처리: 두 DNA 서열의 길이가 다르면 비교할 수 없습니다.
+    if len(normal) != len(patient):
+        print("\n[오류] 두 DNA 서열의 길이가 달라서 분석할 수 없습니다.")
+        return None # 프로그램 흐름 제어를 위해 None 반환
 
-    for row in data:
-        name = row[0]
-        required_minutes = row[1]
-        recommended_mood = row[2]
-        activity_type = row[3]
-
-        # 조건문: 사용자의 기분과 시간이 활동 조건에 맞는지 판단한다.
-        if recommended_mood == mood and required_minutes <= minutes:
-            results.append([name, required_minutes, activity_type])
-
+    # 반복문: DNA 서열의 길이만큼 인덱스를 돌며 글자를 하나씩 비교합니다.
+    for i in range(len(normal)):
+        # 조건문: 정상 DNA의 i번째 글자와 환자 DNA의 i번째 글자가 다르면?
+        if normal[i] != patient[i]:
+            # 2차원 리스트 구조로 추가합니다: [위치, 정상염기, 환자염기]
+            # i는 인덱스(0부터 시작)이므로 사용자가 보기 편하게 위치는 i + 1로 저장해도 좋습니다.
+            results.append([i + 1, normal[i], patient[i]])
+            
     return results
 
 
-def print_result(results):
-    """추천 결과를 출력한다."""
-    print("\n[추천 결과]")
+def print_result(results, total_length):
+    """분석된 2차원 리스트 결과를 바탕으로 변이율과 경고를 출력한다."""
+    print("\n[분석 결과]")
+    
+    if results is None:
+        return # 오류로 인해 결과가 없으면 함수 종료
 
+    # 조건문: 발견된 돌연변이(2차원 리스트의 행 개수)가 0개인 경우
     if len(results) == 0:
-        print("조건에 맞는 활동이 없습니다.")
-        print("시간을 늘리거나 다른 기분을 입력해 보세요.")
+        print("돌연변이가 발견되지 않은 정상 서열입니다.")
     else:
+        print(f"총 {len(results)}개의 돌연변이가 발견되었습니다.\n")
+        print("--------- 변이 상세 정보 ---------")
+        
+        # 반복문: 2차원 리스트 내부를 돌며 상세 정보를 출력하세요.
         for item in results:
-            print(f"- {item[0]} / {item[1]}분 / 유형: {item[2]}")
+            # item[0]은 위치, item[1]은 정상염기, item[2]는 환자염기입니다.
+            ### 1단계: 아래 print문 안의 빈칸을 채워보세요 ###
+            print(f"위치: {item[0]}번 항목 | 정상: {item[1]} -> 변이: {item[2]}")
+            
+        print("----------------------------------")
+        
+        # 변이율(%) 계산: (돌연변이 개수 / 전체 DNA 길이) * 100
+        mutation_rate = (len(results) / total_length) * 100
+        print(f"최종 DNA 변이율: {mutation_rate:.1f}%")
+        
+        # 조건문: 변이율에 따른 유전질환 가능성 경고 (예: 10% 이상이면 위험)
+        ### 2단계: 아래 조건문의 빈칸과 출력 내용을 채워보세요 ###
+        if mutation_rate >= 10.0:
+            print("[경고] 변이율이 10% 이상입니다. 특정 유전질환 가능성이 있으니 정밀 검사가 필요합니다.")
+        else:
+            print("[안내] 변이율이 안전 기준치 미만입니다.")
 
 
 def main():
     show_intro()
-    mood, minutes = get_user_input()
-    results = find_recommendations(activities, mood, minutes)
-    print_result(results)
+    normal, patient = get_dna_sequences()
+    
+    # 분석 함수 호출하여 2차원 리스트 결과 받기
+    mutations_result = analyze_dna(normal, patient)
+    
+    # 출력 함수 호출 (전체 서열 길이인 len(normal)도 함께 전달)
+    print_result(mutations_result, len(normal))
 
 
 # ------------------------------------------------------------
